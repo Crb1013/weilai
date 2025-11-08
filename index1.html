@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>音乐播放器</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 标题栏 -->
+  <div class="title-bar">
+      <h1>未来音乐</h1>
+    </div>
+
+  <!-- 当前播放信息 -->
+  <div class="now-playing">
+    <div class="album-art">🎵</div>
+    <div class="now-playing-info">
+      <div id="now-playing-title" class="now-playing-title">未播放</div>
+      <div id="now-playing-artist" class="now-playing-artist">添加音乐开始播放</div>
+    </div>
+  </div>
+  
+  <!-- 歌词显示区域 -->
+  <div class="lyrics-container">
+    <!-- 歌曲图片显示区域 -->
+    <div id="album-art-display" class="album-art-display">
+      <img id="track-image" class="track-image" src="" alt="歌曲封面" />
+      <div class="image-placeholder">🎵</div>
+    </div>
+    
+    <!-- 歌词显示区域 -->
+    <div id="lyrics-display" class="lyrics-display">
+      <p class="lyrics-placeholder">歌曲播放时显示歌词</p>
+    </div>
+  </div>
+
+  <!-- 播放列表 -->
+  <div class="playlist-container">
+    <div class="playlist-header">
+      <h2>播放列表</h2>
+      <div class="add-buttons">
+        <input type="file" id="file-input" accept=".mp3,.wav,.flac,.aac,.ogg,.wma" multiple style="display: none;">
+        <button id="add-file-btn" class="add-btn" title="添加文件">添加文件</button>
+        <button id="clear-playlist-btn" class="clear-btn" title="清空播放列表">清空列表</button>
+      </div>
+    </div>
+    <div class="playlist-content">
+      <div id="track-list" class="track-list">
+        <!-- 播放列表将通过JavaScript动态生成 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 播放控制区 -->
+  <div class="player-controls">
+    <!-- 进度条 -->
+    <div class="progress-container">
+      <div id="progress-bar" class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+        <div id="progress-handle" class="progress-handle"></div>
+      </div>
+      <div class="time-display">
+        <span id="current-time">0:00</span>
+        <span id="total-time">0:00</span>
+      </div>
+    </div>
+
+    <!-- 控制按钮 -->
+    <div class="controls-container">
+      <div class="main-controls">
+        <button id="prev-btn" class="control-btn side-btn" title="上一首">⏮</button>
+        <button id="play-btn" class="control-btn play-btn" title="播放/暂停">▶</button>
+        <button id="next-btn" class="control-btn side-btn" title="下一首">⏭</button>
+      </div>
+      
+      <!-- 额外控制按钮 -->
+      <div class="extra-controls">
+        <button id="fullscreen-btn" class="control-btn side-btn" title="全屏">⛶</button>
+        <button id="lyrics-btn" class="control-btn side-btn" title="显示/隐藏歌词">📝</button>
+        <button id="upload-lyrics-btn" class="control-btn side-btn" title="上传歌词">📄</button>
+        <button id="upload-art-btn" class="control-btn side-btn" title="上传专辑图片">🖼️</button>
+        <button id="play-mode-btn" class="control-btn side-btn" title="播放模式切换">🔁</button>
+        <button id="export-playlist-btn" class="control-btn side-btn" title="导出播放列表">📋</button>
+        <button id="import-playlist-btn" class="control-btn side-btn" title="导入播放列表">📂</button>
+        <input type="file" id="lyrics-input" accept=".lrc,.txt" style="display: none;">
+        <input type="file" id="art-input" accept=".jpg,.jpeg,.png,.gif" style="display: none;">
+        <input type="file" id="playlist-input" accept=".json" style="display: none;">
+      </div>
+
+      <!-- 音量控制 -->
+      <div class="volume-control">
+        <button id="volume-btn" class="volume-btn" title="音量控制">🔊</button>
+        <input id="volume-slider" type="range" min="0" max="100" value="80" class="volume-slider">
+      </div>
+    </div>
+  </div>
+
+  <!-- 音频元素 -->
+  <audio id="audio-player" preload="metadata"></audio>
+
+  <!-- JavaScript -->
+      <script src="js/player.js"></script>
+      <script src="js/renderer.js"></script>
+</body>
+</html>

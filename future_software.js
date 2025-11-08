@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const productName = this.closest('.product-card').querySelector('h3').textContent;
             alert(`您即将进入${productName}应用`);
             // 这里可以添加跳转到相应产品页面的逻辑
+            window.location.href = 'index1.html';
         });
     });
 
