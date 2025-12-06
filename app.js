@@ -69,14 +69,52 @@ function setupThemeSwitcher() {
 
 // 初始化应用
 function init() {
-    // 从 localStorage 加载数据
-    loadTodos();
-    loadAlarms();
-    // 渲染列表
-    renderTodos();
-    renderAlarms();
-    // 更新任务计数
-    updateTaskCount();
+    // 从用户数据中加载便签数据（如果已登录）
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+        // 检查window.electron是否可用
+        if (window.electron && window.electron.ipcRenderer) {
+            // 使用IPC通信获取用户便签数据
+            window.electron.ipcRenderer.send('get-user-todos', currentUser.username);
+            
+            // 监听获取便签数据结果
+            window.electron.ipcRenderer.once('user-todos-data', (event, result) => {
+                if (result.success) {
+                    todos = result.todos || [];
+                    alarms = result.alarms || [];
+                } else {
+                    console.error('获取便签数据失败:', result.message);
+                    // 失败时从localStorage加载
+                    loadFromLocalStorage();
+                }
+                
+                // 渲染列表
+                renderTodos();
+                renderAlarms();
+                // 更新任务计数
+                updateTaskCount();
+            });
+        } else {
+            // electron不可用时从localStorage加载
+            loadFromLocalStorage();
+            
+            // 渲染列表
+            renderTodos();
+            renderAlarms();
+            // 更新任务计数
+            updateTaskCount();
+        }
+    } else {
+        // 未登录时从localStorage加载
+        loadFromLocalStorage();
+        
+        // 渲染列表
+        renderTodos();
+        renderAlarms();
+        // 更新任务计数
+        updateTaskCount();
+    }
+    
     // 添加事件监听器
     addEventListeners();
     // 设置主题切换
@@ -89,29 +127,53 @@ function init() {
     alarmCheckInterval = setInterval(checkAlarms, 1000);
 }
 
-// 加载待办事项
-function loadTodos() {
+// 从localStorage加载数据（备用）
+function loadFromLocalStorage() {
     const savedTodos = localStorage.getItem('todos');
     if (savedTodos) {
         todos = JSON.parse(savedTodos);
     }
-}
-
-// 保存待办事项
-function saveTodos() {
-    localStorage.setItem('todos', JSON.stringify(todos));
-}
-
-// 加载闹钟
-function loadAlarms() {
+    
     const savedAlarms = localStorage.getItem('alarms');
     if (savedAlarms) {
         alarms = JSON.parse(savedAlarms);
     }
 }
 
-// 保存闹钟
-function saveAlarms() {
+// 保存待办事项和闹钟
+function saveUserData() {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+        // 检查window.electron是否可用
+        if (window.electron && window.electron.ipcRenderer) {
+            // 使用IPC通信保存用户便签数据
+            window.electron.ipcRenderer.send('save-user-todos', {
+                username: currentUser.username,
+                todos: todos,
+                alarms: alarms
+            });
+            
+            // 监听保存结果
+            window.electron.ipcRenderer.once('save-user-todos-result', (event, result) => {
+                if (!result.success) {
+                    console.error('保存便签数据失败:', result.message);
+                    // 失败时保存到localStorage
+                    saveToLocalStorage();
+                }
+            });
+        } else {
+            // electron不可用时保存到localStorage
+            saveToLocalStorage();
+        }
+    } else {
+        // 未登录时保存到localStorage
+        saveToLocalStorage();
+    }
+}
+
+// 保存到localStorage（备用）
+function saveToLocalStorage() {
+    localStorage.setItem('todos', JSON.stringify(todos));
     localStorage.setItem('alarms', JSON.stringify(alarms));
 }
 
@@ -274,7 +336,7 @@ function checkAlarms() {
     
     // 如果有触发的闹钟，保存更新
     if (triggeredAlarms.length > 0) {
-        saveAlarms();
+        saveUserData();
         renderAlarms();
     }
 }
@@ -328,12 +390,12 @@ function showAlarmNotification(text) {
 function deleteAlarm(id) {
     const todo = todos.find(todo => todo.id === id);
     if (todo) {
-        todo.hasAlarm = false;
-        todo.alarmTime = null;
-        saveTodos();
-        renderTodos();
-        renderAlarms();
-    }
+            todo.hasAlarm = false;
+            todo.alarmTime = null;
+            saveUserData();
+            renderTodos();
+            renderAlarms();
+        }
 }
 
 // 添加新的待办事项
@@ -349,7 +411,7 @@ function addTodo() {
     };
     
     todos.push(newTodo);
-    saveTodos();
+    saveUserData();
     renderTodos();
     updateTaskCount();
     
@@ -387,7 +449,7 @@ function addAlarm() {
     };
     
     alarms.push(newAlarm);
-    saveAlarms();
+    saveUserData();
     renderAlarms();
     
     // 清空输入框
@@ -399,17 +461,17 @@ function addAlarm() {
 function toggleTodo(id) {
     const todo = todos.find(todo => todo.id === id);
     if (todo) {
-        todo.completed = !todo.completed;
-        saveTodos();
-        renderTodos();
-        updateTaskCount();
-    }
+            todo.completed = !todo.completed;
+            saveUserData();
+            renderTodos();
+            updateTaskCount();
+        }
 }
 
 // 删除待办事项
 function deleteTodo(id) {
     todos = todos.filter(todo => todo.id !== id);
-    saveTodos();
+    saveUserData();
     renderTodos();
     updateTaskCount();
 }
@@ -417,7 +479,7 @@ function deleteTodo(id) {
 // 删除闹钟
 function deleteAlarm(id) {
     alarms = alarms.filter(alarm => alarm.id !== id);
-    saveAlarms();
+    saveUserData();
     renderAlarms();
 }
 
@@ -439,7 +501,7 @@ function setFilter(filter) {
 // 清除已完成的待办事项
 function clearCompleted() {
     todos = todos.filter(todo => !todo.completed);
-    saveTodos();
+    saveUserData();
     renderTodos();
     updateTaskCount();
 }

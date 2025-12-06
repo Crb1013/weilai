@@ -93,9 +93,15 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function(e) {
             e.preventDefault();
             const productName = this.closest('.product-card').querySelector('h3').textContent;
-            alert(`您即将进入${productName}应用`);
-            // 这里可以添加跳转到相应产品页面的逻辑
-            window.location.href = 'index1.html';
+            // 移除alert提示，直接跳转到相应产品页面
+            // 这里可以根据产品名称跳转到不同页面
+            if (productName === '未来地图（开发中）') {
+                // 未来地图开发中，暂时不跳转
+                alert('未来地图功能正在开发中，敬请期待！');
+            } else if (productName === '未来音乐' || productName === '未来音乐（测试版）') {
+                // 跳转到音乐页面
+                window.location.href = 'index1.html';
+            }
         });
     });
 
@@ -374,22 +380,27 @@ document.addEventListener('DOMContentLoaded', function() {
             securityCode: securityCode
         };
         
-        // 使用IPC通信保存用户
-        window.electron.ipcRenderer.send('add-user', newUser);
-        
-        // 监听添加用户结果
-        window.electron.ipcRenderer.once('add-user-result', (event, result) => {
-            if (result.success) {
-                // 显示安全代号
-                alert(`注册成功！\n请记住您的安全代号：${securityCode}\n用于忘记密码时重置密码`);
-                hideModal(registerModal);
-                registerForm.reset();
-                // 重置头像预览
-                avatarPreview.src = 'https://picsum.photos/seed/avatar/100/100';
-            } else {
-                alert(result.message || '注册失败！');
-            }
-        });
+        // 检查window.electron是否可用
+        if (window.electron && window.electron.ipcRenderer) {
+            // 使用IPC通信保存用户
+            window.electron.ipcRenderer.send('add-user', newUser);
+            
+            // 监听添加用户结果
+            window.electron.ipcRenderer.once('add-user-result', (event, result) => {
+                if (result.success) {
+                    // 显示安全代号
+                    alert(`注册成功！\n请记住您的安全代号：${securityCode}\n用于忘记密码时重置密码`);
+                    hideModal(registerModal);
+                    registerForm.reset();
+                    // 重置头像预览
+                    avatarPreview.src = 'https://picsum.photos/seed/avatar/100/100';
+                } else {
+                    alert(result.message || '注册失败！');
+                }
+            });
+        } else {
+            alert('无法连接到服务器，请稍后重试！');
+        }
     });
     
     // 获取当前登录用户
@@ -418,56 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 注册功能
-    registerForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const username = document.getElementById('register-username').value;
-        const password = document.getElementById('register-password').value;
-        const confirmPassword = document.getElementById('register-confirm-password').value;
-        const avatarPreview = document.getElementById('avatar-preview');
-        
-        // 验证密码长度
-        if (password.length < 8 || password.length > 12) {
-            alert('密码必须为8-12位！');
-            return;
-        }
-        
-        // 验证密码
-        if (password !== confirmPassword) {
-            alert('两次输入的密码不一致！');
-            return;
-        }
-        
-        // 检查用户名是否已存在
-        const users = getUsers();
-        if (users.some(user => user.username === username)) {
-            alert('该用户名已被注册！');
-            return;
-        }
-        
-        // 生成安全代号
-        const securityCode = generateSecurityCode();
-        
-        // 创建新用户
-        const newUser = {
-            username: username,
-            password: password, // 实际项目中应该加密密码
-            avatar: avatarPreview.src,
-            securityCode: securityCode
-        };
-        
-        // 保存用户
-        users.push(newUser);
-        saveUsers(users);
-        
-        // 显示安全代号
-        alert(`注册成功！\n请记住您的安全代号：${securityCode}\n用于忘记密码时重置密码`);
-        hideModal(registerModal);
-        registerForm.reset();
-        // 重置头像预览
-        avatarPreview.src = 'https://picsum.photos/seed/avatar/100/100';
-    });
+
     
     // 登录功能
     loginForm.addEventListener('submit', (e) => {
@@ -476,22 +438,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-password').value;
         
-        // 使用IPC通信验证用户
-        window.electron.ipcRenderer.send('verify-user', { username, password });
-        
-        // 监听验证结果
-        window.electron.ipcRenderer.once('verify-user-result', (event, result) => {
-            if (result.success) {
-                // 登录成功
-                localStorage.setItem('currentUser', JSON.stringify(result.user));
-                checkLoginStatus();
-                hideModal(loginModal);
-                loginForm.reset();
-                alert('登录成功！');
-            } else {
-                alert(result.message || '用户名或密码错误！');
-            }
-        });
+        // 检查window.electron是否可用
+        if (window.electron && window.electron.ipcRenderer) {
+            // 使用IPC通信验证用户
+            window.electron.ipcRenderer.send('verify-user', { username, password });
+            
+            // 监听验证结果
+            window.electron.ipcRenderer.once('verify-user-result', (event, result) => {
+                if (result.success) {
+                    // 登录成功
+                    localStorage.setItem('currentUser', JSON.stringify(result.user));
+                    checkLoginStatus();
+                    hideModal(loginModal);
+                    loginForm.reset();
+                    alert('登录成功！');
+                } else {
+                    alert(result.message || '用户名或密码错误！');
+                }
+            });
+        } else {
+            alert('无法连接到服务器，请稍后重试！');
+        }
     });
     
     // 退出登录
@@ -522,46 +489,51 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 使用IPC通信获取所有用户
-        window.electron.ipcRenderer.send('get-users');
-        
-        // 监听获取用户结果
-        window.electron.ipcRenderer.once('users-data', (event, users) => {
-            // 查找用户
-            const userIndex = users.findIndex(user => 
-                user.username === username && user.securityCode === securityCode
-            );
+        // 检查window.electron是否可用
+        if (window.electron && window.electron.ipcRenderer) {
+            // 使用IPC通信获取所有用户
+            window.electron.ipcRenderer.send('get-users');
             
-            if (userIndex !== -1) {
-                // 重置密码
-                users[userIndex].password = newPassword;
+            // 监听获取用户结果
+            window.electron.ipcRenderer.once('users-data', (event, users) => {
+                // 查找用户
+                const userIndex = users.findIndex(user => 
+                    user.username === username && user.securityCode === securityCode
+                );
                 
-                // 保存更新后的用户数据
-                // 这里需要重新添加所有用户，因为我们没有单独的更新用户IPC
-                // 首先删除所有用户
-                users.forEach(user => {
-                    window.electron.ipcRenderer.send('delete-user', user.username);
-                });
-                
-                // 然后重新添加所有用户
-                let usersAdded = 0;
-                users.forEach(user => {
-                    window.electron.ipcRenderer.send('add-user', user);
-                    window.electron.ipcRenderer.once('add-user-result', () => {
-                        usersAdded++;
-                        if (usersAdded === users.length) {
-                            // 所有用户添加完成
-                            alert('密码重置成功！请使用新密码登录');
-                            hideModal(forgotModal);
-                            forgotForm.reset();
-                            showModal(loginModal);
-                        }
+                if (userIndex !== -1) {
+                    // 重置密码
+                    users[userIndex].password = newPassword;
+                    
+                    // 保存更新后的用户数据
+                    // 这里需要重新添加所有用户，因为我们没有单独的更新用户IPC
+                    // 首先删除所有用户
+                    users.forEach(user => {
+                        window.electron.ipcRenderer.send('delete-user', user.username);
                     });
-                });
-            } else {
-                alert('用户名或安全代号错误！');
-            }
-        });
+                    
+                    // 然后重新添加所有用户
+                    let usersAdded = 0;
+                    users.forEach(user => {
+                        window.electron.ipcRenderer.send('add-user', user);
+                        window.electron.ipcRenderer.once('add-user-result', () => {
+                            usersAdded++;
+                            if (usersAdded === users.length) {
+                                // 所有用户添加完成
+                                alert('密码重置成功！请使用新密码登录');
+                                hideModal(forgotModal);
+                                forgotForm.reset();
+                                showModal(loginModal);
+                            }
+                        });
+                    });
+                } else {
+                    alert('用户名或安全代号错误！');
+                }
+            });
+        } else {
+            alert('无法连接到服务器，请稍后重试！');
+        }
     });
     
     // 注销账户
@@ -569,24 +541,121 @@ document.addEventListener('DOMContentLoaded', function() {
         if (confirm('确定要注销账户吗？此操作不可恢复！')) {
             const currentUser = getCurrentUser();
             if (currentUser) {
-                // 使用IPC通信删除用户
-                window.electron.ipcRenderer.send('delete-user', currentUser.username);
-                
-                // 监听删除结果
-                window.electron.ipcRenderer.once('delete-user-result', (event, result) => {
-                    if (result.success) {
-                        // 清除当前登录状态
-                        localStorage.removeItem('currentUser');
-                        checkLoginStatus();
-                        alert('账户已成功注销！');
-                    } else {
-                        alert('注销失败！');
-                    }
-                });
+                // 检查window.electron是否可用
+                if (window.electron && window.electron.ipcRenderer) {
+                    // 使用IPC通信删除用户
+                    window.electron.ipcRenderer.send('delete-user', currentUser.username);
+                    
+                    // 监听删除结果
+                    window.electron.ipcRenderer.once('delete-user-result', (event, result) => {
+                        if (result.success) {
+                            // 清除当前登录状态
+                            localStorage.removeItem('currentUser');
+                            checkLoginStatus();
+                            alert('账户已成功注销！');
+                        } else {
+                            alert('注销失败！');
+                        }
+                    });
+                } else {
+                    alert('无法连接到服务器，请稍后重试！');
+                }
             }
         }
     });
     
     // 初始化登录状态
     checkLoginStatus();
+    
+    // 获取并显示用户数量
+    function updateUserCount() {
+        // 检查window.electron是否可用
+        if (window.electron && window.electron.ipcRenderer) {
+            // 使用IPC通信获取用户数量
+            window.electron.ipcRenderer.send('get-user-count');
+            
+            // 监听获取用户数量结果
+            window.electron.ipcRenderer.once('user-count-data', (event, result) => {
+                if (result.success) {
+                    const userCountElement = document.getElementById('user-count');
+                    if (userCountElement) {
+                        userCountElement.textContent = result.count + '+';
+                    }
+                }
+            });
+        }
+    }
+    
+    // 页面加载时更新用户数量
+    updateUserCount();
+    
+    // 每隔30秒更新一次用户数量
+    setInterval(updateUserCount, 30000);
+    
+    // 登录提示模态框功能
+    // 在DOM元素获取部分添加loginPromptModal
+    const loginPromptModal = document.getElementById('login-prompt-modal');
+    
+    // 显示登录提示模态框（如果用户未登录）
+    function showLoginPrompt() {
+        const currentUser = getCurrentUser();
+        // 检查是否已登录，未登录则显示提示
+        if (!currentUser && loginPromptModal) {
+            loginPromptModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    // 关闭登录提示模态框
+    function hideLoginPrompt() {
+        if (loginPromptModal) {
+            loginPromptModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // 如果登录提示模态框存在，添加事件监听器
+    if (loginPromptModal) {
+        // 立即登录按钮点击事件
+        const promptLoginBtn = document.getElementById('prompt-login-btn');
+        if (promptLoginBtn) {
+            promptLoginBtn.addEventListener('click', () => {
+                hideLoginPrompt();
+                // 显示登录模态框
+                showModal(loginModal);
+            });
+        }
+        
+        // 稍后再说按钮点击事件
+        const promptLaterBtn = document.getElementById('prompt-later-btn');
+        if (promptLaterBtn) {
+            promptLaterBtn.addEventListener('click', hideLoginPrompt);
+        }
+        
+        // 为登录提示模态框的关闭按钮添加单独的事件监听器
+        const promptCloseBtn = loginPromptModal.querySelector('.close-btn');
+        if (promptCloseBtn) {
+            // 移除之前绑定的hideAllModals事件
+            promptCloseBtn.removeEventListener('click', hideAllModals);
+            // 添加新的hideLoginPrompt事件
+            promptCloseBtn.addEventListener('click', hideLoginPrompt);
+        }
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', (e) => {
+            if (e.target === loginPromptModal) {
+                hideLoginPrompt();
+            }
+        });
+    }
+    
+    // 修改hideAllModals函数，添加关闭登录提示模态框的功能
+    const originalHideAllModals = hideAllModals;
+    hideAllModals = function() {
+        originalHideAllModals();
+        hideLoginPrompt();
+    };
+    
+    // 页面加载时直接显示登录提示，不延迟
+    showLoginPrompt();
 });

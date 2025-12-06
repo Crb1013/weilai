@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入本地CSS文件 -->
     <link rel="stylesheet" href="future_software.css">
+    <!-- 网站图标 -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 50L45 65L75 35' stroke='%23FFC107' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" type="image/svg+xml">
 </head>
 <body>
     <!-- 导航栏 -->
@@ -102,8 +104,8 @@
                     <div class="product-icon music-icon">
                         <i class="fas fa-music"></i>
                     </div>
-                    <h3>未来音乐</h3>
-                    <p>沉浸式音乐体验，让您的耳朵享受未来的声音。</p>
+                    <h3>未来音乐（测试版）</h3>
+                    <p>沉浸式音乐体验，让您的耳朵享受未来的声音。（测试版，功能有限，无法在线听歌）</p>
                     <a href="#" class="product-btn" id="music-button">立即体验</a>
                 </div>
             </div>
@@ -118,7 +120,7 @@
                 <p>未来软件是一家专注于智能科技产品开发的创新型企业。我们致力于通过先进的技术为用户提供高质量的数字化生活体验。</p>
                 <div class="about-stats">
                     <div class="stat-item">
-                        <h4>20</h4>
+                        <h4>5</h4>
                         <p>个人技术人员</p>
                     </div>
                     <div class="stat-item">
@@ -126,7 +128,7 @@
                         <p>产品</p>
                     </div>
                     <div class="stat-item">
-                        <h4>100+</h4>
+                        <h4 id="user-count">50+</h4>
                         <p>全国用户</p>
                     </div>
                 </div>
@@ -162,7 +164,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2023 未来软件. 保留所有权利.</p>
+            <p>&copy; 2025 未来软件. 保留所有权利.</p>
         </div>
     </footer>
 
@@ -264,6 +266,31 @@
                 </form>
                 <div class="auth-toggle">
                     <p>记得密码了？ <a href="#" id="toggle-back-to-login">返回登录</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 登录提示模态框 -->
+    <div id="login-prompt-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3> 功能提示</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="prompt-content">
+                    <p>登录账号可享受以下特权：</p>
+                    <ul>
+                        <li> 跨设备云端同步便签数据</li>
+                        <li> 数据持久化存储</li>
+                        <li> 安全可靠的用户认证</li>
+                        <li> 个性化数据统计</li>
+                    </ul>
+                    <div class="prompt-actions">
+                        <button id="prompt-login-btn" class="btn-primary">立即登录</button>
+                        <button id="prompt-later-btn" class="btn-secondary">稍后再说</button>
+                    </div>
                 </div>
             </div>
         </div>

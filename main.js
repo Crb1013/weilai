@@ -173,13 +173,61 @@ ipcMain.on('verify-user', (event, { username, password }) => {
 
 // IPC通信：删除用户
 ipcMain.on('delete-user', (event, username) => {
-  try {
-    const users = getUsers();
-    const filteredUsers = users.filter(u => u.username !== username);
-    const success = saveUsers(filteredUsers);
-    event.reply('delete-user-result', { success: success });
-  } catch (err) {
-    console.error('删除用户错误:', err);
-    event.reply('delete-user-result', { success: false, message: '删除用户失败' });
-  }
+    try {
+        const users = getUsers();
+        const filteredUsers = users.filter(u => u.username !== username);
+        const success = saveUsers(filteredUsers);
+        event.reply('delete-user-result', { success: success });
+    } catch (err) {
+        console.error('删除用户错误:', err);
+        event.reply('delete-user-result', { success: false, message: '删除用户失败' });
+    }
+});
+
+// IPC通信：获取用户便签数据
+ipcMain.on('get-user-todos', (event, username) => {
+    try {
+        const users = getUsers();
+        const user = users.find(u => u.username === username);
+        if (user) {
+            event.reply('user-todos-data', { success: true, todos: user.todos || [], alarms: user.alarms || [] });
+        } else {
+            event.reply('user-todos-data', { success: false, message: '用户不存在' });
+        }
+    } catch (err) {
+        console.error('获取用户便签数据错误:', err);
+        event.reply('user-todos-data', { success: false, message: '获取便签数据失败' });
+    }
+});
+
+// IPC通信：保存用户便签数据
+ipcMain.on('save-user-todos', (event, { username, todos, alarms }) => {
+    try {
+        const users = getUsers();
+        const userIndex = users.findIndex(u => u.username === username);
+        if (userIndex !== -1) {
+            // 更新用户的便签数据
+            users[userIndex].todos = todos;
+            users[userIndex].alarms = alarms;
+            const success = saveUsers(users);
+            event.reply('save-user-todos-result', { success: success });
+        } else {
+            event.reply('save-user-todos-result', { success: false, message: '用户不存在' });
+        }
+    } catch (err) {
+        console.error('保存用户便签数据错误:', err);
+        event.reply('save-user-todos-result', { success: false, message: '保存便签数据失败' });
+    }
+});
+
+// IPC通信：获取用户数量
+ipcMain.on('get-user-count', (event) => {
+    try {
+        const users = getUsers();
+        const userCount = users.length;
+        event.reply('user-count-data', { success: true, count: userCount });
+    } catch (err) {
+        console.error('获取用户数量错误:', err);
+        event.reply('user-count-data', { success: false, message: '获取用户数量失败' });
+    }
 });

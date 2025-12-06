@@ -669,6 +669,69 @@ body {
     padding: 30px;
 }
 
+/* 登录提示模态框样式 */
+.prompt-content {
+    text-align: center;
+}
+
+.prompt-content p {
+    font-size: 16px;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+.prompt-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px 0;
+    text-align: left;
+}
+
+.prompt-content li {
+    padding: 10px 0;
+    color: var(--light-text);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.prompt-content li:before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.prompt-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background-color: var(--light-text);
+    color: var(--white);
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-secondary:hover {
+    background-color: var(--text-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
 /* 表单样式 */
 .auth-form {
     display: flex;
