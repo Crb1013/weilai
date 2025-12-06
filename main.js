@@ -101,3 +101,85 @@ ipcMain.on('open-folder-dialog', (event) => {
     console.error('打开文件夹对话框错误:', err);
   });
 });
+
+// 用户数据文件路径
+const usersFilePath = path.join(__dirname, 'users.json');
+
+// 读取用户数据
+function getUsers() {
+  try {
+    if (fs.existsSync(usersFilePath)) {
+      const data = fs.readFileSync(usersFilePath, 'utf8');
+      return JSON.parse(data);
+    }
+    return [];
+  } catch (err) {
+    console.error('读取用户数据错误:', err);
+    return [];
+  }
+}
+
+// 保存用户数据
+function saveUsers(users) {
+  try {
+    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf8');
+    return true;
+  } catch (err) {
+    console.error('保存用户数据错误:', err);
+    return false;
+  }
+}
+
+// IPC通信：获取用户数据
+ipcMain.on('get-users', (event) => {
+  const users = getUsers();
+  event.reply('users-data', users);
+});
+
+// IPC通信：添加新用户
+ipcMain.on('add-user', (event, user) => {
+  try {
+    const users = getUsers();
+    // 检查用户名是否已存在
+    if (users.some(u => u.username === user.username)) {
+      event.reply('add-user-result', { success: false, message: '用户名已存在' });
+      return;
+    }
+    // 添加新用户
+    users.push(user);
+    const success = saveUsers(users);
+    event.reply('add-user-result', { success: success });
+  } catch (err) {
+    console.error('添加用户错误:', err);
+    event.reply('add-user-result', { success: false, message: '添加用户失败' });
+  }
+});
+
+// IPC通信：验证用户登录
+ipcMain.on('verify-user', (event, { username, password }) => {
+  try {
+    const users = getUsers();
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) {
+      event.reply('verify-user-result', { success: true, user });
+    } else {
+      event.reply('verify-user-result', { success: false, message: '用户名或密码错误' });
+    }
+  } catch (err) {
+    console.error('验证用户登录错误:', err);
+    event.reply('verify-user-result', { success: false, message: '验证失败' });
+  }
+});
+
+// IPC通信：删除用户
+ipcMain.on('delete-user', (event, username) => {
+  try {
+    const users = getUsers();
+    const filteredUsers = users.filter(u => u.username !== username);
+    const success = saveUsers(filteredUsers);
+    event.reply('delete-user-result', { success: success });
+  } catch (err) {
+    console.error('删除用户错误:', err);
+    event.reply('delete-user-result', { success: false, message: '删除用户失败' });
+  }
+});

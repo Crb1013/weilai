@@ -342,15 +342,55 @@ document.addEventListener('DOMContentLoaded', function() {
         showModal(loginModal);
     });
     
-    // 获取存储的用户数据
-    function getUsers() {
-        return JSON.parse(localStorage.getItem('users')) || [];
-    }
-    
-    // 保存用户数据
-    function saveUsers(users) {
-        localStorage.setItem('users', JSON.stringify(users));
-    }
+    // 注册功能
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('register-username').value;
+        const password = document.getElementById('register-password').value;
+        const confirmPassword = document.getElementById('register-confirm-password').value;
+        const avatarPreview = document.getElementById('avatar-preview');
+        
+        // 验证密码长度
+        if (password.length < 8 || password.length > 12) {
+            alert('密码必须为8-12位！');
+            return;
+        }
+        
+        // 验证密码
+        if (password !== confirmPassword) {
+            alert('两次输入的密码不一致！');
+            return;
+        }
+        
+        // 生成安全代号
+        const securityCode = generateSecurityCode();
+        
+        // 创建新用户
+        const newUser = {
+            username: username,
+            password: password, // 实际项目中应该加密密码
+            avatar: avatarPreview.src,
+            securityCode: securityCode
+        };
+        
+        // 使用IPC通信保存用户
+        window.electron.ipcRenderer.send('add-user', newUser);
+        
+        // 监听添加用户结果
+        window.electron.ipcRenderer.once('add-user-result', (event, result) => {
+            if (result.success) {
+                // 显示安全代号
+                alert(`注册成功！\n请记住您的安全代号：${securityCode}\n用于忘记密码时重置密码`);
+                hideModal(registerModal);
+                registerForm.reset();
+                // 重置头像预览
+                avatarPreview.src = 'https://picsum.photos/seed/avatar/100/100';
+            } else {
+                alert(result.message || '注册失败！');
+            }
+        });
+    });
     
     // 获取当前登录用户
     function getCurrentUser() {
@@ -436,20 +476,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-password').value;
         
-        // 验证用户
-        const users = getUsers();
-        const user = users.find(user => user.username === username && user.password === password);
+        // 使用IPC通信验证用户
+        window.electron.ipcRenderer.send('verify-user', { username, password });
         
-        if (user) {
-            // 登录成功
-            saveCurrentUser(user);
-            checkLoginStatus();
-            hideModal(loginModal);
-            loginForm.reset();
-            alert('登录成功！');
-        } else {
-            alert('用户名或密码错误！');
-        }
+        // 监听验证结果
+        window.electron.ipcRenderer.once('verify-user-result', (event, result) => {
+            if (result.success) {
+                // 登录成功
+                localStorage.setItem('currentUser', JSON.stringify(result.user));
+                checkLoginStatus();
+                hideModal(loginModal);
+                loginForm.reset();
+                alert('登录成功！');
+            } else {
+                alert(result.message || '用户名或密码错误！');
+            }
+        });
     });
     
     // 退出登录
@@ -480,24 +522,46 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 查找用户
-        let users = getUsers();
-        const userIndex = users.findIndex(user => 
-            user.username === username && user.securityCode === securityCode
-        );
+        // 使用IPC通信获取所有用户
+        window.electron.ipcRenderer.send('get-users');
         
-        if (userIndex !== -1) {
-            // 重置密码
-            users[userIndex].password = newPassword;
-            saveUsers(users);
+        // 监听获取用户结果
+        window.electron.ipcRenderer.once('users-data', (event, users) => {
+            // 查找用户
+            const userIndex = users.findIndex(user => 
+                user.username === username && user.securityCode === securityCode
+            );
             
-            alert('密码重置成功！请使用新密码登录');
-            hideModal(forgotModal);
-            forgotForm.reset();
-            showModal(loginModal);
-        } else {
-            alert('用户名或安全代号错误！');
-        }
+            if (userIndex !== -1) {
+                // 重置密码
+                users[userIndex].password = newPassword;
+                
+                // 保存更新后的用户数据
+                // 这里需要重新添加所有用户，因为我们没有单独的更新用户IPC
+                // 首先删除所有用户
+                users.forEach(user => {
+                    window.electron.ipcRenderer.send('delete-user', user.username);
+                });
+                
+                // 然后重新添加所有用户
+                let usersAdded = 0;
+                users.forEach(user => {
+                    window.electron.ipcRenderer.send('add-user', user);
+                    window.electron.ipcRenderer.once('add-user-result', () => {
+                        usersAdded++;
+                        if (usersAdded === users.length) {
+                            // 所有用户添加完成
+                            alert('密码重置成功！请使用新密码登录');
+                            hideModal(forgotModal);
+                            forgotForm.reset();
+                            showModal(loginModal);
+                        }
+                    });
+                });
+            } else {
+                alert('用户名或安全代号错误！');
+            }
+        });
     });
     
     // 注销账户
@@ -505,15 +569,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (confirm('确定要注销账户吗？此操作不可恢复！')) {
             const currentUser = getCurrentUser();
             if (currentUser) {
-                // 从用户列表中删除
-                let users = getUsers();
-                users = users.filter(user => user.username !== currentUser.username);
-                saveUsers(users);
+                // 使用IPC通信删除用户
+                window.electron.ipcRenderer.send('delete-user', currentUser.username);
                 
-                // 清除当前登录状态
-                localStorage.removeItem('currentUser');
-                checkLoginStatus();
-                alert('账户已成功注销！');
+                // 监听删除结果
+                window.electron.ipcRenderer.once('delete-user-result', (event, result) => {
+                    if (result.success) {
+                        // 清除当前登录状态
+                        localStorage.removeItem('currentUser');
+                        checkLoginStatus();
+                        alert('账户已成功注销！');
+                    } else {
+                        alert('注销失败！');
+                    }
+                });
             }
         }
     });
