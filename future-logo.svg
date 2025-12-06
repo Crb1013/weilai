@@ -1,0 +1,13 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- 白色背景 -->
+  <rect width="800" height="600" fill="white"/>
+  <!-- 黄色圆形 -->
+  <circle cx="250" cy="300" r="200" fill="white" stroke="yellow" stroke-width="10"/>
+  <!-- 黄色V形 -->
+  <polygon points="150,400 250,150 350,400" fill="yellow" stroke="black" stroke-width="5"/>
+  <!-- 文字部分 -->
+  <text x="600" y="200" font-family="Arial, sans-serif" font-size="60" fill="yellow" text-anchor="middle">未来</text>
+  <text x="600" y="280" font-family="Arial, sans-serif" font-size="60" fill="yellow" text-anchor="middle">科技</text>
+  <text x="600" y="330" font-family="Arial, sans-serif" font-size="20" fill="yellow" text-anchor="middle">Future Technology</text>
+  <text x="600" y="355" font-family="Arial, sans-serif" font-size="16" fill="yellow" text-anchor="middle">Company</text>
+</svg>
