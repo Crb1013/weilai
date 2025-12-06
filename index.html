@@ -23,13 +23,36 @@
                 <h1>未来软件</h1>
             </div>
             <div class="menu">
-                <a href="#" class="menu-item">首页</a>
-                <a href="#products" class="menu-item">产品</a>
-                <a href="#about" class="menu-item">关于我们</a>
+            <a href="#" class="menu-item">首页</a>
+            <a href="#products" class="menu-item">产品</a>
+            <a href="#about" class="menu-item">关于我们</a>
+        </div>
+        <!-- 用户信息显示区 -->
+        <div id="user-info" class="user-info" style="display: none;">
+            <div class="user-profile">
+                <div class="avatar-wrapper">
+                    <img id="user-avatar" src="https://picsum.photos/seed/avatar/100/100" alt="用户头像" class="user-avatar">
+                    <div class="avatar-dropdown">
+                        <div class="dropdown-content">
+                            <div class="dropdown-item username-item">
+                                <span id="username-display"></span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button id="logout-btn" class="dropdown-btn">退出登录</button>
+                            <button id="delete-account-btn" class="dropdown-btn delete-btn">注销账户</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </div>
+        </div>
+        <div class="auth-buttons">
+            <button id="login-btn" class="btn-auth">登录</button>
+            <!-- 隐藏注册按钮 -->
+            <button id="register-btn" class="btn-auth btn-primary" style="display: none;">注册</button>
+        </div>
+        <div class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </div>
         </div>
     </nav>
 
@@ -43,7 +66,7 @@
         </div>
         <div class="hero-image fade-in-up">
             <div class="hero-shape"></div>
-            <img src="https://picsum.photos/seed/futuretech/800/600" alt="未来软件科技展示">
+            <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&h=600&fit=crop&crop=entropy" alt="彩色f字母" style="transform: rotate(-15deg);">
         </div>
         </div>
     </section>
@@ -92,7 +115,7 @@
     <section id="about" class="about">
         <div class="container">
             <div class="about-image">
-            <img src="https://picsum.photos/seed/futureteam/600/400" alt="我们的团队">
+            <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600&h=400&fit=crop&crop=entropy" alt="程序员敲代码">
         </div>
             <div class="about-content">
                 <h2 class="section-title">关于我们</h2>
@@ -114,8 +137,6 @@
             </div>
         </div>
     </section>
-
-
 
     <!-- 页脚 -->
     <footer class="footer">
@@ -148,6 +169,109 @@
             <p>&copy; 2023 未来软件. 保留所有权利.</p>
         </div>
     </footer>
+
+    <!-- 登录模态框 -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>用户登录</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-username">用户名</label>
+                        <input type="text" id="login-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">密码</label>
+                        <input type="password" id="login-password" name="password" required>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#" id="forgot-password-link">忘记密码？</a>
+                    </div>
+                    <button type="submit" class="btn-primary">登录</button>
+                </form>
+                <div class="auth-toggle">
+                    <p>还没有账号？ <a href="#" id="toggle-register">立即注册</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册模态框 -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>用户注册</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="register-form" class="auth-form">
+                    <div class="form-group avatar-group">
+                        <label for="register-avatar">头像</label>
+                        <div class="avatar-upload">
+                            <div class="avatar-preview">
+                                <img id="avatar-preview" src="https://picsum.photos/seed/avatar/100/100" alt="头像预览">
+                            </div>
+                            <input type="file" id="register-avatar" name="avatar" accept="image/*" onchange="previewAvatar(this)">
+                            <label for="register-avatar" class="avatar-upload-btn">选择头像</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-username">用户名</label>
+                        <input type="text" id="register-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">密码（8-12位）</label>
+                        <input type="password" id="register-password" name="password" minlength="8" maxlength="12" pattern=".{8,12}" required title="密码必须为8-12位">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-confirm-password">确认密码</label>
+                        <input type="password" id="register-confirm-password" name="confirm-password" minlength="8" maxlength="12" required>
+                    </div>
+                    <button type="submit" class="btn-primary">注册</button>
+                </form>
+                <div class="auth-toggle">
+                    <p>已有账号？ <a href="#" id="toggle-login">立即登录</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 忘记密码模态框 -->
+    <div id="forgot-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>忘记密码</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="forgot-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="forgot-username">用户名</label>
+                        <input type="text" id="forgot-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="forgot-security-code">安全代号</label>
+                        <input type="text" id="forgot-security-code" name="securityCode" required placeholder="例如：A1B2C">
+                    </div>
+                    <div class="form-group">
+                        <label for="forgot-new-password">新密码（8-12位）</label>
+                        <input type="password" id="forgot-new-password" name="newPassword" minlength="8" maxlength="12" pattern=".{8,12}" required title="密码必须为8-12位">
+                    </div>
+                    <div class="form-group">
+                        <label for="forgot-confirm-password">确认新密码</label>
+                        <input type="password" id="forgot-confirm-password" name="confirmPassword" minlength="8" maxlength="12" required>
+                    </div>
+                    <button type="submit" class="btn-primary">重置密码</button>
+                </form>
+                <div class="auth-toggle">
+                    <p>记得密码了？ <a href="#" id="toggle-back-to-login">返回登录</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 引入本地JavaScript文件 -->
     <script src="future_software.js"></script>

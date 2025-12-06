@@ -239,3 +239,285 @@ const addButtonEffects = function() {
 };
 
 document.addEventListener('DOMContentLoaded', addButtonEffects);
+
+// 生成5位包含字母和数字的安全代号
+function generateSecurityCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 5; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+}
+
+// 头像预览功能
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatar-preview').src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// 登录注册功能
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM元素获取
+    const loginBtn = document.getElementById('login-btn');
+    const registerBtn = document.getElementById('register-btn');
+    const loginModal = document.getElementById('login-modal');
+    const registerModal = document.getElementById('register-modal');
+    const forgotModal = document.getElementById('forgot-modal');
+    const closeBtns = document.querySelectorAll('.close-btn');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const forgotForm = document.getElementById('forgot-form');
+    const toggleRegister = document.getElementById('toggle-register');
+    const toggleLogin = document.getElementById('toggle-login');
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+    const toggleBackToLogin = document.getElementById('toggle-back-to-login');
+    const userInfo = document.getElementById('user-info');
+    const usernameDisplay = document.getElementById('username-display');
+    const logoutBtn = document.getElementById('logout-btn');
+    const deleteAccountBtn = document.getElementById('delete-account-btn');
+    const authButtons = document.querySelector('.auth-buttons');
+    const userAvatar = document.getElementById('user-avatar');
+    
+    // 模态框控制
+    function showModal(modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function hideModal(modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    
+    function hideAllModals() {
+        hideModal(loginModal);
+        hideModal(registerModal);
+        hideModal(forgotModal);
+    }
+    
+    // 事件监听
+    loginBtn.addEventListener('click', () => showModal(loginModal));
+    registerBtn.addEventListener('click', () => showModal(registerModal));
+    
+    closeBtns.forEach(btn => {
+        btn.addEventListener('click', hideAllModals);
+    });
+    
+    // 点击模态框外部关闭
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            hideAllModals();
+        }
+    });
+    
+    // 切换模态框
+    toggleRegister.addEventListener('click', (e) => {
+        e.preventDefault();
+        hideModal(loginModal);
+        showModal(registerModal);
+    });
+    
+    toggleLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        hideModal(registerModal);
+        showModal(loginModal);
+    });
+    
+    // 忘记密码相关事件
+    forgotPasswordLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        hideModal(loginModal);
+        showModal(forgotModal);
+    });
+    
+    toggleBackToLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        hideModal(forgotModal);
+        showModal(loginModal);
+    });
+    
+    // 获取存储的用户数据
+    function getUsers() {
+        return JSON.parse(localStorage.getItem('users')) || [];
+    }
+    
+    // 保存用户数据
+    function saveUsers(users) {
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+    
+    // 获取当前登录用户
+    function getCurrentUser() {
+        return JSON.parse(localStorage.getItem('currentUser')) || null;
+    }
+    
+    // 保存当前登录用户
+    function saveCurrentUser(user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+    }
+    
+    // 检查登录状态
+    function checkLoginStatus() {
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+            // 已登录，显示用户信息
+            usernameDisplay.textContent = currentUser.username;
+            userAvatar.src = currentUser.avatar || 'https://picsum.photos/seed/avatar/100/100';
+            userInfo.style.display = 'flex';
+            authButtons.style.display = 'none';
+        } else {
+            // 未登录，显示登录注册按钮
+            userInfo.style.display = 'none';
+            authButtons.style.display = 'flex';
+        }
+    }
+    
+    // 注册功能
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('register-username').value;
+        const password = document.getElementById('register-password').value;
+        const confirmPassword = document.getElementById('register-confirm-password').value;
+        const avatarPreview = document.getElementById('avatar-preview');
+        
+        // 验证密码长度
+        if (password.length < 8 || password.length > 12) {
+            alert('密码必须为8-12位！');
+            return;
+        }
+        
+        // 验证密码
+        if (password !== confirmPassword) {
+            alert('两次输入的密码不一致！');
+            return;
+        }
+        
+        // 检查用户名是否已存在
+        const users = getUsers();
+        if (users.some(user => user.username === username)) {
+            alert('该用户名已被注册！');
+            return;
+        }
+        
+        // 生成安全代号
+        const securityCode = generateSecurityCode();
+        
+        // 创建新用户
+        const newUser = {
+            username: username,
+            password: password, // 实际项目中应该加密密码
+            avatar: avatarPreview.src,
+            securityCode: securityCode
+        };
+        
+        // 保存用户
+        users.push(newUser);
+        saveUsers(users);
+        
+        // 显示安全代号
+        alert(`注册成功！\n请记住您的安全代号：${securityCode}\n用于忘记密码时重置密码`);
+        hideModal(registerModal);
+        registerForm.reset();
+        // 重置头像预览
+        avatarPreview.src = 'https://picsum.photos/seed/avatar/100/100';
+    });
+    
+    // 登录功能
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        
+        // 验证用户
+        const users = getUsers();
+        const user = users.find(user => user.username === username && user.password === password);
+        
+        if (user) {
+            // 登录成功
+            saveCurrentUser(user);
+            checkLoginStatus();
+            hideModal(loginModal);
+            loginForm.reset();
+            alert('登录成功！');
+        } else {
+            alert('用户名或密码错误！');
+        }
+    });
+    
+    // 退出登录
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('currentUser');
+        checkLoginStatus();
+        alert('已退出登录！');
+    });
+    
+    // 忘记密码功能
+    forgotForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('forgot-username').value;
+        const securityCode = document.getElementById('forgot-security-code').value;
+        const newPassword = document.getElementById('forgot-new-password').value;
+        const confirmPassword = document.getElementById('forgot-confirm-password').value;
+        
+        // 验证密码长度
+        if (newPassword.length < 8 || newPassword.length > 12) {
+            alert('密码必须为8-12位！');
+            return;
+        }
+        
+        // 验证密码一致性
+        if (newPassword !== confirmPassword) {
+            alert('两次输入的密码不一致！');
+            return;
+        }
+        
+        // 查找用户
+        let users = getUsers();
+        const userIndex = users.findIndex(user => 
+            user.username === username && user.securityCode === securityCode
+        );
+        
+        if (userIndex !== -1) {
+            // 重置密码
+            users[userIndex].password = newPassword;
+            saveUsers(users);
+            
+            alert('密码重置成功！请使用新密码登录');
+            hideModal(forgotModal);
+            forgotForm.reset();
+            showModal(loginModal);
+        } else {
+            alert('用户名或安全代号错误！');
+        }
+    });
+    
+    // 注销账户
+    deleteAccountBtn.addEventListener('click', () => {
+        if (confirm('确定要注销账户吗？此操作不可恢复！')) {
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                // 从用户列表中删除
+                let users = getUsers();
+                users = users.filter(user => user.username !== currentUser.username);
+                saveUsers(users);
+                
+                // 清除当前登录状态
+                localStorage.removeItem('currentUser');
+                checkLoginStatus();
+                alert('账户已成功注销！');
+            }
+        }
+    });
+    
+    // 初始化登录状态
+    checkLoginStatus();
+});

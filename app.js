@@ -579,5 +579,64 @@ function addEventListeners() {
     alarmDateTime.value = formattedDateTime;
 }
 
+// 获取当前登录用户
+function getCurrentUser() {
+    return JSON.parse(localStorage.getItem('currentUser')) || null;
+}
+
+// 显示用户信息
+function showUserInfo() {
+    const user = getCurrentUser();
+    if (user) {
+        // 更新用户头像和用户名
+        const userAvatar = document.getElementById('user-avatar');
+        const usernameDisplay = document.getElementById('username-display');
+        
+        if (userAvatar) {
+            userAvatar.src = user.avatar || 'https://picsum.photos/seed/avatar/100/100';
+        }
+        if (usernameDisplay) {
+            usernameDisplay.textContent = user.username;
+        }
+        
+        // 显示用户信息区域，隐藏登录按钮
+        const userInfoSection = document.getElementById('user-info-section');
+        const loginSection = document.getElementById('login-section');
+        
+        if (userInfoSection) {
+            userInfoSection.style.display = 'block';
+        }
+        if (loginSection) {
+            loginSection.style.display = 'none';
+        }
+    }
+}
+
+// 初始化登录按钮
+function initLoginButton() {
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function() {
+            // 跳转到主页面的登录界面
+            window.location.href = 'index.html';
+        });
+    }
+    
+    // 初始化退出登录按钮
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            // 清除当前登录用户
+            localStorage.removeItem('currentUser');
+            // 刷新页面
+            window.location.reload();
+        });
+    }
+    
+    // 检查是否已登录
+    showUserInfo();
+}
+
 // 启动应用
 init();
+initLoginButton();
