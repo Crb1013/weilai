@@ -1298,29 +1298,24 @@ class MusicPlayer {
       return;
     }
     
+    // 检查track是否已有封面图片
+    if (track.coverImage) {
+      this.trackImage.src = track.coverImage;
+      this.trackImage.onload = () => {
+        this.trackImage.classList.add('loaded');
+      };
+      return;
+    }
+    
     // 尝试从音频文件中提取封面图片
-    this.extractCoverImage(track)
-      .then(imageUrl => {
-        if (imageUrl) {
-          this.trackImage.src = imageUrl;
-          this.trackImage.onload = () => {
-            this.trackImage.classList.add('loaded');
-          };
-        } else {
-          // 如果无法提取封面，生成默认图片
-          this.trackImage.src = this.generateDefaultImage(track);
-          this.trackImage.onload = () => {
-            this.trackImage.classList.add('loaded');
-          };
-        }
-      })
-      .catch(() => {
-        // 出错时使用默认图片
-        this.trackImage.src = this.generateDefaultImage(track);
-        this.trackImage.onload = () => {
-          this.trackImage.classList.add('loaded');
-        };
-      });
+    this.extractCoverImage(track);
+    
+    // 同时生成默认图片，以防提取失败
+    setTimeout(() => {
+      if (!this.trackImage.src || this.trackImage.src === '') {
+        this.generateDefaultImage(track);
+      }
+    }, 1000);
   }
   
   // 生成默认图片
