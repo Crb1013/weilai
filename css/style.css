@@ -27,6 +27,85 @@ body {
   transition: background-color 1s ease;
 }
 
+.login-btn {
+  -webkit-app-region: no-drag;
+  padding: 8px 16px;
+  background: linear-gradient(45deg, #1db954, #1ed760);
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  background: linear-gradient(45deg, #1ed760, #1db954);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(29, 185, 84, 0.4);
+}
+
+/* 用户信息区域 */
+.user-info-section {
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #1db954;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
+}
+
+.username {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.logout-btn {
+  -webkit-app-region: no-drag;
+  padding: 6px 12px;
+  background-color: rgba(255, 59, 48, 0.2);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  border-radius: 15px;
+  color: #ff3b30;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 59, 48, 0.3);
+  color: #fff;
+  border-color: #ff3b30;
+}
+
+.login-section {
+  -webkit-app-region: no-drag;
+}
+
 .title-bar h1 {
   font-size: 24px;
   font-weight: 600;
